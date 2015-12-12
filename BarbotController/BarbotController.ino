@@ -2,6 +2,7 @@
 #include "Arduino.h"
 #include "SerialProcessor.h"
 SerialProcessor *serial;
+bool raspiActive = false;
 
 void setup() {
     pinMode(LED_PIN,OUTPUT);
@@ -11,6 +12,7 @@ void setup() {
     pinMode(ROT_STEP,OUTPUT);
     digitalWrite(ROT_ENABLE,LOW);
     digitalWrite(ROT_DIR,HIGH);
+    Serial.println("Barbot");
 }
 
 void loop() {

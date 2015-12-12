@@ -5,12 +5,14 @@ SerialProcessor::SerialProcessor(int baud) {
     cmdBuffer = "";
     drive = new DriveSystem();
     rot = new RotationSystem();
+    raspiReady = false;
+    this->state = 0;
 }
 
 void SerialProcessor::parseCmd() {
     Serial.println("Parse cmd");
     int length = cmdBuffer.length();
-    int state = 0;
+    this->state = 0;
     char rotList[BUFFER_SIZE];
     char triggerList[BUFFER_SIZE];
     char index = 0;
@@ -68,11 +70,16 @@ void SerialProcessor::parseCmd() {
                 break;
         }
     }
+    Serial.print("busy\n");
     for (int i = 0; i < index; i++) {
         rot->rotateTo(rotList[i]);
         Serial.print("Trigger count: ");
         Serial.println(triggerList[i],DEC);
     }
+    delay(1000);
+    Serial.print("finished\n");
+    delay(1000);
+    Serial.print("ready\n");
 }
 
 void SerialProcessor::read() {
@@ -85,7 +92,35 @@ void SerialProcessor::read() {
 }
 
 void SerialProcessor::service() {
-    if (Serial.available() > 0) {
-        this->read();
+    if (raspiReady == false) {
+    	if (Serial.available() > 0) {
+	    char c = Serial.read();
+	    switch (this->state) {
+	    	case 0:
+		    if (c == 'o') {
+		    	this->state = 1;
+		    }
+		    break;
+		case 1:
+		    if (c == 'k') {
+		    	this->state = 2;
+		    } else {
+		    	this->state = 0;
+		    }
+		    break;
+		case 2:
+		    if (c == '\n' || c == '\r') {
+			raspiReady = true;
+			Serial.print("ready\n");
+		    } else {
+			this->state = 0;
+		    }
+		    break;
+	    }
+	}
+    } else {
+   	 if (Serial.available() > 0) {
+        	this->read();
+    	}
     }
 }

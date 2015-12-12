@@ -12,6 +12,8 @@ class SerialProcessor {
         String cmdBuffer;
         DriveSystem *drive;
         RotationSystem *rot;
+	bool raspiReady;
+	int state;
     public:
         SerialProcessor(int baud);
         void service();
