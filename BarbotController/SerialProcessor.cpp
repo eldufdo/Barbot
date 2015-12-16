@@ -15,7 +15,7 @@ void SerialProcessor::parseCmd() {
     this->state = 0;
     char rotList[BUFFER_SIZE];
     char triggerList[BUFFER_SIZE];
-    char index = 0;
+    int index = 0;
     bool fFound = false;
     for (int i = 0; i < length-1; i++) {
         char c = cmdBuffer[i];
@@ -73,6 +73,9 @@ void SerialProcessor::parseCmd() {
     Serial.print("busy\n");
     for (int i = 0; i < index; i++) {
         rot->rotateTo(rotList[i]);
+	drive->up(DRIVE_UNIT_4CL);
+	delay(500);
+	drive->down();
         Serial.print("Trigger count: ");
         Serial.println(triggerList[i],DEC);
     }

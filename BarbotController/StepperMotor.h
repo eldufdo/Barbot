@@ -6,13 +6,16 @@
 
 class StepperMotor {
     private:
-        enum Direction {LEFT,RIGHT};
         char stepPin;
         char enablePin;
         char dirPin;
+	int speed;
     public:
+        enum Direction {LEFT,RIGHT};
         StepperMotor(char enablePin,char stepPin,char dirPin);
+	void setDirection(Direction dir);
         void step(int steps);
+	void stepSpeed(int speed);
 };
 
 #endif

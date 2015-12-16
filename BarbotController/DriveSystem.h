@@ -2,15 +2,18 @@
 #define DRIVE_H
 
 #include "Arduino.h"
+#include "StepperMotor.h"
+
 
 class DriveSystem {
     enum Position {IN,OUT};
 
     private:
         Position actPosition;
+	StepperMotor *stepper;
     public:
         DriveSystem();
-        void in();
-        void out();
+        void up(int step);
+        void down();
 };
 #endif

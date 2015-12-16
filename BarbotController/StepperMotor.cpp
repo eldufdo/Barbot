@@ -7,14 +7,27 @@ StepperMotor::StepperMotor(char enablePin,char stepPin,char dirPin) {
     this->stepPin = stepPin;
     this->dirPin = dirPin;
     this->enablePin = enablePin;
+    this->speed = 600;
     digitalWrite(this->enablePin,LOW); // enable motor on init
 }
 
 void StepperMotor::step(int steps) {
     for (int i = 0; i < steps; i++) {
         digitalWrite(this->stepPin,HIGH);
-        delayMicroseconds(200);
+        delayMicroseconds(this->speed);
         digitalWrite(this->stepPin,LOW);
-        delayMicroseconds(200);
-    }   
+        delayMicroseconds(this->speed);
+    } 
+}
+
+void StepperMotor::stepSpeed(int factor) {
+	this->speed = 600/factor;
+}
+
+void StepperMotor::setDirection(Direction dir) {
+    if (dir == LEFT) {
+        digitalWrite(this->dirPin,LOW);
+    } else {
+	digitalWrite(this->dirPin,HIGH);
+    }
 }
