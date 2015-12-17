@@ -2,7 +2,6 @@
 #include "Arduino.h"
 #include "SerialProcessor.h"
 #include "PressureSensor.h"
-#include <TimerOne.h>
 SerialProcessor *serial;
 PressureSensor *pressure;
 
