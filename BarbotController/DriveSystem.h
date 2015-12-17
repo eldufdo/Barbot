@@ -15,5 +15,6 @@ class DriveSystem {
         DriveSystem();
         void up(int step);
         void down();
+        void down(int step);
 };
 #endif

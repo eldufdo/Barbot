@@ -3,7 +3,7 @@
 
 DriveSystem::DriveSystem() {
     this->stepper = new StepperMotor(DRIVE_ENABLE,DRIVE_STEP,DRIVE_DIR);
-    this->stepper->stepSpeed(2);
+    this->stepper->stepSpeed(6);
     pinMode(DRIVE_ENDSTOP_PIN,INPUT);
     digitalWrite(DRIVE_ENDSTOP_PIN,HIGH);
 }
@@ -18,4 +18,9 @@ void DriveSystem::down() {
     while (digitalRead(DRIVE_ENDSTOP_PIN) == 0) {
 	stepper->step(10);
     }
+}
+
+void DriveSystem::down(int step) {
+    stepper->setDirection(StepperMotor::RIGHT);
+    stepper->step(step);
 }

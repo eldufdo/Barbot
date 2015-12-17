@@ -12,7 +12,7 @@ class SerialProcessor {
         String cmdBuffer;
         DriveSystem *drive;
         RotationSystem *rot;
-	bool raspiReady;
+	bool initialized;
 	int state;
     public:
         SerialProcessor(int baud);

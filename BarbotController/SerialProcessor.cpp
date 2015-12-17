@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include "SerialProcessor.h"
 
 SerialProcessor::SerialProcessor(int baud) {
@@ -5,8 +6,12 @@ SerialProcessor::SerialProcessor(int baud) {
     cmdBuffer = "";
     drive = new DriveSystem();
     rot = new RotationSystem();
-    raspiReady = false;
+    initialized = false;
     this->state = 0;
+    this->drive->down();
+    this->rot->home();
+    pinMode(ENDSTOP_GLAS,INPUT);
+    digitalWrite(ENDSTOP_GLAS,HIGH);
 }
 
 void SerialProcessor::parseCmd() {
@@ -71,16 +76,41 @@ void SerialProcessor::parseCmd() {
         }
     }
     Serial.print("busy\n");
+    Serial.println("Waiting for glas");
+    while (digitalRead(ENDSTOP_GLAS) == 0) {
+    }
     for (int i = 0; i < index; i++) {
         rot->rotateTo(rotList[i]);
-	drive->up(DRIVE_UNIT_4CL);
-	delay(500);
-	drive->down();
+	int actTrigger = triggerList[i];
+	if (actTrigger < 0 || actTrigger > 10) {
+		break;
+	}
         Serial.print("Trigger count: ");
         Serial.println(triggerList[i],DEC);
+	for (int t=0; t < actTrigger; t++) {
+		Serial.println("Trigger");
+		if ( t == 0) {
+			drive->up(30000);
+			drive->up(30000);
+		} else {
+			drive->up(20000);
+			drive->up(20000);
+		}
+		delay(1000);
+		drive->down(20000);
+		drive->down(20000);
+		if (t > 0 && t < actTrigger - 1) {
+			delay(500);
+		}
+	}
+	drive->down();
     }
-    delay(1000);
+    rot->home();
     Serial.print("finished\n");
+    Serial.println("Please take glass");
+    while (digitalRead(ENDSTOP_GLAS) == 1) {
+
+    }
     delay(1000);
     Serial.print("ready\n");
 }
@@ -95,7 +125,7 @@ void SerialProcessor::read() {
 }
 
 void SerialProcessor::service() {
-    if (raspiReady == false) {
+    if (initialized == false) {
     	if (Serial.available() > 0) {
 	    char c = Serial.read();
 	    switch (this->state) {
@@ -113,11 +143,10 @@ void SerialProcessor::service() {
 		    break;
 		case 2:
 		    if (c == '\n' || c == '\r') {
-			raspiReady = true;
-			Serial.print("ready\n");
-		    } else {
-			this->state = 0;
+		            Serial.print("ready\n");
+			    initialized = true;
 		    }
+		    this->state = 0;
 		    break;
 	    }
 	}

@@ -19,17 +19,16 @@ void RotationSystem::rotateTo(int index) {
     int diff = this->actIndex - index;
     if (diff < 0) {
         Serial.print("Go left ");
-        this->stepper->setDirection(StepperMotor::LEFT);
+        this->stepper->setDirection(StepperMotor::RIGHT);
         diff = diff * -1;
     } else {
         Serial.print("Go right ");
-        this->stepper->setDirection(StepperMotor::RIGHT);
+        this->stepper->setDirection(StepperMotor::LEFT);
     }
     Serial.print(diff,DEC);
     Serial.println(" times");
     for (int i = 0; i < diff; i++) {
         stepper->step(ROT_ONE_UNIT);
-        delay(1000);
     }
     this->actIndex = index;
 
@@ -44,8 +43,9 @@ void RotationSystem::setSpeed(int rpm) {
 void RotationSystem::home() {
     this->stepper->setDirection(StepperMotor::LEFT);
     while (digitalRead(ENDSTOP_ROT) == 0) {
-        this->stepper->step(200);       
+        this->stepper->step(10);       
     }
+    this->actIndex = 0;
 }
 
 

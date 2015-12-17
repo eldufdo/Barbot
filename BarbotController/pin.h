@@ -25,7 +25,7 @@
 #define TRIGGER_PIN 7
 
 #define LED_PIN 13
-
+#define ENDSTOP_GLAS 4
 #define ENDSTOP_ROT 12
 
 #define DRIVE_ENDSTOP_PIN 7

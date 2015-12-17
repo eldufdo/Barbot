@@ -6,7 +6,7 @@
 SerialProcessor *serial;
 PressureSensor *pressure;
 
-#define DEBUG 1
+#define DEBUG 0
 
 
 void setup() {
@@ -34,13 +34,19 @@ void loop() {
 	if (Serial.available()) {
 	    char c = Serial.read();
 	    if (c == 'u') {
-		drive->up(1000);
+		drive->up(3000);
 	    } else if (c == 'd') {
 		drive->down();
 	    } else if (c == 'l') {
 		rot->rotateTo(rot->getActIndex()+1);
 	    } else if (c == 'r') {
 		rot->rotateTo(rot->getActIndex()-1);
+	    } else if (c == 'h') {
+		rot->home();
+	    } else if (c == 't') {
+		drive->up(30000);
+		drive->up(30000);
+		drive->down();
 	    }
 	}
 		
@@ -51,6 +57,8 @@ void loop() {
     Serial.print(digitalRead(ENDSTOP_ROT));
     Serial.print("Drive home: ");
     Serial.print(digitalRead(DRIVE_ENDSTOP_PIN));
+    Serial.print("Glas triggered: ");
+    Serial.print(digitalRead(ENDSTOP_GLAS));
     Serial.println();
     delay(200);
 #endif
