@@ -3,11 +3,15 @@
 #include "SerialProcessor.h"
 #include "PressureSensor.h"
 #include <TimerOne.h>
+#include <Adafruit_NeoPixel.h>
+
 SerialProcessor *serial;
-PressureSensor *pressure;
 
 #define DEBUG 0
 
+
+Adafruit_NeoPixel *strip;
+    
 
 void setup() {
     pinMode(LED_PIN,OUTPUT);
@@ -18,8 +22,17 @@ void setup() {
     digitalWrite(ROT_ENABLE,LOW);
     digitalWrite(ROT_DIR,HIGH);
     Serial.println("Barbot");
-    pressure = new PressureSensor();
+    strip = new Adafruit_NeoPixel(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+    strip->begin();
+    strip->setBrightness(64);
+    for (int i = 0; i < LED_COUNT; i++) { 
+	strip->setPixelColor(i,200,0,0);
+    }
+    strip->show(); // Initialize all pixels to 'off'
+    
 }
+
+
 
 #if DEBUG == 1
 RotationSystem *rot = new RotationSystem();
@@ -51,8 +64,6 @@ void loop() {
 	}
 		
     }
-    Serial.print("Pressure: ");
-    Serial.print(pressure->getPressureValue(),DEC);
     Serial.print("Rot home: ");
     Serial.print(digitalRead(ENDSTOP_ROT));
     Serial.print("Drive home: ");
