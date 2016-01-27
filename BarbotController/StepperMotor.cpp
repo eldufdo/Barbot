@@ -20,6 +20,28 @@ void StepperMotor::step(int steps) {
     } 
 }
 
+void StepperMotor::stepAccel(int steps) {
+    int speed0, startSpeed;
+    speed0 = startSpeed = this->speed * 1.1;
+    char maxReached = 0;
+    for (int i = 0; i < steps; i++) {
+        if (maxReached == 0  && speed0 > this->speed) {
+            speed0--;
+            if (speed0 <= this->speed) {
+                maxReached = 1;
+                speed0 == this -> speed;
+            }
+        } 
+        if ((steps - i) < startSpeed){
+            speed0++;
+        }
+        digitalWrite(this->stepPin,HIGH);
+        delayMicroseconds(speed0);
+        digitalWrite(this->stepPin,LOW);
+        delayMicroseconds(speed0);
+    } 
+}
+
 void StepperMotor::stepSpeed(int factor) {
 	this->speed = 600/factor;
 }

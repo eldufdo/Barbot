@@ -11,10 +11,11 @@ class StepperMotor {
         char dirPin;
 	int speed;
     public:
-        enum Direction {LEFT,RIGHT};
-        StepperMotor(char enablePin,char stepPin,char dirPin);
+    enum Direction {LEFT,RIGHT};
+    StepperMotor(char enablePin,char stepPin,char dirPin);
 	void setDirection(Direction dir);
-        void step(int steps);
+    void stepAccel(int steps);
+    void step(int steps);
 	void stepSpeed(int speed);
 };
 
