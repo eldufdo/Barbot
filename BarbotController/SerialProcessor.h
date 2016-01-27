@@ -14,8 +14,10 @@ class SerialProcessor {
         RotationSystem *rot;
 	bool initialized;
 	int state;
+	char *animation;
+	char tmpAnimation;
     public:
-        SerialProcessor(int baud);
+        SerialProcessor(int baud,char *animation);
         void service();
 };
 #endif

@@ -1,7 +1,9 @@
 #include "Arduino.h"
 #include "SerialProcessor.h"
 
-SerialProcessor::SerialProcessor(int baud) {
+SerialProcessor::SerialProcessor(int baud,char *anim) {
+    this->animation = anim;
+    this->tmpAnimation = 0;
     Serial.begin(baud);
     cmdBuffer = "";
     drive = new DriveSystem();
@@ -15,7 +17,6 @@ SerialProcessor::SerialProcessor(int baud) {
 }
 
 void SerialProcessor::parseCmd() {
-    Serial.println("Parse cmd");
     int length = cmdBuffer.length();
     this->state = 0;
     char rotList[BUFFER_SIZE];
@@ -26,6 +27,14 @@ void SerialProcessor::parseCmd() {
         char c = cmdBuffer[i];
         switch(state) {
             case 0:
+		if (c == 'A') {
+			state = 5;
+			break;
+		}
+		if (c == 'L') {
+			state = 4;
+			break;
+		}
                 if (c != 'F' && c != ' ') {
                     Serial.print("Error: unexpected char: ");
                     Serial.println(c,DEC);
@@ -72,13 +81,31 @@ void SerialProcessor::parseCmd() {
                 }
                 fFound = false;
                 state = 0;
-                break;
+	     break;
+	    case 4:
+		if (c >= 48 && c <= 57) {
+		    c = c - 48;
+                } 
+		this->tmpAnimation = c;
+		state = 0;
+		return;
+	    case 5:
+		if (c >= 48 && c <= 57) {
+		    c = c - 48;
+                } 
+		*(this->animation) = c;
+		state = 0;
+		return;
+		
         }
     }
     Serial.print("busy\n");
-    Serial.println("Waiting for glas");
+    Serial.println("waiting for glas\n");
+    *(this->animation) = 3;
     while (digitalRead(ENDSTOP_GLAS) == 0) {
     }
+    Serial.println("got glas\n");
+    *(this->animation) = this->tmpAnimation;
     for (int i = 0; i < index; i++) {
         rot->rotateTo(rotList[i]);
 	int actTrigger = triggerList[i];
@@ -107,12 +134,14 @@ void SerialProcessor::parseCmd() {
     }
     rot->home();
     Serial.print("finished\n");
-    Serial.println("Please take glass");
+    Serial.println("take glas");
+    *(this->animation) = 2;
     while (digitalRead(ENDSTOP_GLAS) == 1) {
 
     }
     delay(1000);
     Serial.print("ready\n");
+    *(this->animation) = 4;
 }
 
 void SerialProcessor::read() {
@@ -144,6 +173,7 @@ void SerialProcessor::service() {
 		case 2:
 		    if (c == '\n' || c == '\r') {
 		            Serial.print("ready\n");
+			    *(this->animation) = 4;
 			    initialized = true;
 		    }
 		    this->state = 0;
