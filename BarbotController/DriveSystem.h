@@ -10,11 +10,16 @@ class DriveSystem {
 
     private:
         Position actPosition;
-	StepperMotor *stepper;
+        StepperMotor *stepper;
+        int offset;
     public:
         DriveSystem();
         void up(int step);
+        void fullUp();
+        void halfUp();
+        void halfDown();
         void down();
         void down(int step);
+        void setOffset(int offset);
 };
 #endif

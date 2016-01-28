@@ -23,18 +23,28 @@ void SerialProcessor::parseCmd() {
     char triggerList[BUFFER_SIZE];
     int index = 0;
     bool fFound = false;
+    Serial.print("Cmdbuffer length: ");
+    Serial.print(length,DEC);
+    Serial.print(" --> ");
+    Serial.print(cmdBuffer);
+    Serial.println();
     for (int i = 0; i < length-1; i++) {
         char c = cmdBuffer[i];
         switch(state) {
             case 0:
-		if (c == 'A') {
-			state = 5;
-			break;
-		}
-		if (c == 'L') {
-			state = 4;
-			break;
-		}
+                if (c == 'O') { // store EEPROM Drive Offset
+                    Serial.println("Store Drive Offset");
+                    state = 6;
+                    break;
+                }
+                if (c == 'A') {
+                    state = 5;
+                    break;
+                }
+                if (c == 'L') {
+                    state = 4;
+                    break;
+                }
                 if (c != 'F' && c != ' ') {
                     Serial.print("Error: unexpected char: ");
                     Serial.println(c,DEC);
@@ -83,21 +93,30 @@ void SerialProcessor::parseCmd() {
                 state = 0;
 	     break;
 	    case 4:
-		if (c >= 48 && c <= 57) {
-		    c = c - 48;
-                } 
-		this->tmpAnimation = c;
-		state = 0;
-		return;
+            if (c >= 48 && c <= 57) {
+                c = c - 48;
+            } 
+            this->tmpAnimation = c;
+            state = 0;
+            return;
 	    case 5:
-		if (c >= 48 && c <= 57) {
-		    c = c - 48;
-                } 
-		*(this->animation) = c;
-		state = 0;
-		return;
-		
+            if (c >= 48 && c <= 57) {
+                c = c - 48;
+            } 
+            *(this->animation) = c;
+            state = 0;
+            return;
+        case 6:
+            EEPROM.write(DRIVE_OFFSET_EEPROM_ADDR,c);
+            int offset = DRIVE_OFFSET_MUL * c;
+            Serial.print("Stored drive offset ");
+            Serial.print(offset,DEC);
+            Serial.println();
+            drive->setOffset(offset);
+            state = 0;
+            return;
         }
+
     }
     Serial.print("busy\n");
     Serial.println("waiting for glas\n");
@@ -117,15 +136,12 @@ void SerialProcessor::parseCmd() {
 	for (int t=0; t < actTrigger; t++) {
 		Serial.println("Trigger");
 		if ( t == 0) {
-			drive->up(30000);
-			drive->up(30000);
+            drive->fullUp();
 		} else {
-			drive->up(20000);
-			drive->up(20000);
+            drive->halfUp();
 		}
-		delay(1000);
-		drive->down(20000);
-		drive->down(20000);
+		delay(2000);
+        drive->halfDown();
 		if (t > 0 && t < actTrigger - 1) {
 			delay(500);
 		}
@@ -153,6 +169,11 @@ void SerialProcessor::read() {
     }
 }
 
+
+void SerialProcessor::setDriveOffset(int offset) {
+    this->drive->setOffset(offset);
+}
+
 void SerialProcessor::service() {
     if (initialized == false) {
     	if (Serial.available() > 0) {
@@ -172,7 +193,7 @@ void SerialProcessor::service() {
 		    break;
 		case 2:
 		    if (c == '\n' || c == '\r') {
-		            Serial.print("ready\n");
+                Serial.print("ready\n");
 			    *(this->animation) = 4;
 			    initialized = true;
 		    }

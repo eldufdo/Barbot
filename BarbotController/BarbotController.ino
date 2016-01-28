@@ -4,6 +4,7 @@
 #include "PressureSensor.h"
 #include <TimerOne.h>
 #include <Adafruit_NeoPixel.h>
+#include <EEPROM.h>
 
 SerialProcessor *serial;
 
@@ -182,6 +183,24 @@ void ledCallback(void) {
 	}
 }
 
+void initEEPROM() {
+    if (EEPROM.read(0) != EEPROM_MAGIC) {
+        Serial.println("EEPROM not initialized");
+        Serial.println("Write to EEPROM");
+        EEPROM.write(0,EEPROM_MAGIC);
+        EEPROM.write(DRIVE_OFFSET_EEPROM_ADDR,DRIVE_OFFSET_DEFAULT);
+    
+    } else {
+        Serial.println("EEPROM initialized");
+        Serial.println("Reading drive offset");
+        int offset = EEPROM.read(DRIVE_OFFSET_EEPROM_ADDR);
+        offset = offset * DRIVE_OFFSET_MUL;
+        serial->setDriveOffset(offset);
+        Serial.print(offset,DEC);
+        Serial.println();
+    }
+}
+
 void setup() {
     pinMode(LED_PIN,OUTPUT);
     serial = new SerialProcessor(9600,&animation);
@@ -191,6 +210,7 @@ void setup() {
     digitalWrite(ROT_ENABLE,LOW);
     digitalWrite(ROT_DIR,HIGH);
     Serial.println("Barbot");
+    initEEPROM();
     strip = new Adafruit_NeoPixel(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
     strip->begin();
     strip->setBrightness(64);
@@ -211,26 +231,25 @@ void loop() {
 #if DEBUG == 0
     serial->service();
 #else
-    if (Serial.available() > 0) {
-	if (Serial.available()) {
-	    char c = Serial.read();
-	    if (c == 'u') {
-		drive->up(3000);
-	    } else if (c == 'd') {
-		drive->down();
-	    } else if (c == 'l') {
-		rot->rotateTo(rot->getActIndex()+1);
-	    } else if (c == 'r') {
-		rot->rotateTo(rot->getActIndex()-1);
-	    } else if (c == 'h') {
-		rot->home();
-	    } else if (c == 't') {
-		drive->up(30000);
-		drive->up(30000);
-		drive->down();
-	    }
-	}
-		
+    if (Serial.available()) {
+        char c = Serial.read();
+        if (c == 'u') {
+            drive->up(3000);
+        } else if (c == 'k') {
+            drive->up(30000);
+        } else if (c == 'd') {
+            drive->down();
+        } else if (c == 'l') {
+            rot->rotateTo(rot->getActIndex()+1);
+        } else if (c == 'r') {
+            rot->rotateTo(rot->getActIndex()-1);
+        } else if (c == 'h') {
+            rot->home();
+        } else if (c == 't') {
+            drive->up(30000);
+            drive->up(31500);
+            drive->down();
+        }
     }
     Serial.print("Rot home: ");
     Serial.print(digitalRead(ENDSTOP_ROT));
